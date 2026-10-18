@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CRYPTO TERMINAL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Crypto Terminal — public prices, candles, movers, and headlines. No account or API key.">
+<meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="dark">
+<meta name="format-detection" content="telephone=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Crypto Terminal">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="apple-touch-icon.png" sizes="180x180">
+<script src="vendor/lightweight-charts.standalone.production.js"></script>
+<style>
+*{box-sizing:border-box}
+html{background:#000}
+body{margin:0;background:#000;color:#ffa028;font:12px/1.35 "Consolas","Menlo","Courier New",monospace;height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;-webkit-text-size-adjust:100%}
+#top{display:flex;background:#1a1a1a;border-bottom:1px solid #ffa028;align-items:center;padding-top:env(safe-area-inset-top)}
+#top .brand{background:#ffa028;color:#000;font-weight:bold;padding:4px 10px}
+#cmd{flex:1;background:#000;color:#fff;border:0;border-right:1px solid #333;font:inherit;padding:5px 8px;text-transform:uppercase;outline:none;min-width:0}
+#go{background:#0a0;color:#000;font-weight:bold;padding:4px 10px;cursor:pointer;touch-action:manipulation}
+#clock{padding:4px 10px;color:#fff;font-variant-numeric:tabular-nums}
+#tape{white-space:nowrap;overflow:hidden;background:#111;border-bottom:1px solid #333;height:20px;max-width:100%}
+#tapein{display:inline-block;padding-left:100%;animation:sc 80s linear infinite}#tapein span{margin-right:28px}
+@keyframes sc{to{transform:translateX(-100%)}}
+#grid{flex:1;display:grid;grid-template-columns:1.1fr 2.2fr 1.1fr;grid-template-rows:1fr 1fr;gap:2px;padding:2px;min-height:0}
+.p{border:1px solid #333;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.p h2{margin:0;font-size:12px;background:#ffa028;color:#000;padding:2px 6px;display:flex;justify-content:space-between;align-items:center;gap:4px 8px}
+.b{flex:1;overflow:auto;padding:4px 6px;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse}td,th{padding:1px 3px;text-align:right;white-space:nowrap}th{color:#888;font-weight:normal;border-bottom:1px solid #333}td:first-child,th:first-child{text-align:left}
+.up{color:#0f0}.dn{color:#f33}.w{color:#fff}.m{color:#888}
+.bar{position:relative;height:9px;background:#222;border:1px solid #555;margin:2px 0 7px}.bar i{position:absolute;top:-3px;width:3px;height:13px;background:#ffa028}
+.oor{color:#000;background:#f33;padding:0 3px}
+#chartp{grid-row:1/3;grid-column:2}#chart{flex:1;min-height:0}
+.iv{cursor:pointer;padding:0 4px;touch-action:manipulation}.iv.on{background:#000;color:#ffa028}
+a{color:#ffa028;text-decoration:none}a:hover{color:#fff}.news div{border-bottom:1px dotted #333;padding:3px 0}
+.sym{cursor:pointer;touch-action:manipulation}.sym:hover{color:#fff}
+body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);padding-bottom:env(safe-area-inset-bottom)}
+@media (prefers-reduced-motion:reduce){#tapein{animation:none;padding-left:8px}}
+@media (max-width:900px){
+  body{height:auto;min-height:100vh;min-height:100dvh;overflow-x:hidden;overflow-y:auto}
+  #top{position:sticky;top:0;z-index:10;flex-wrap:wrap}
+  #top .brand{order:1;padding:10px 12px}
+  #go{order:2;min-width:48px;min-height:44px;padding:10px 16px;display:inline-flex;align-items:center;justify-content:center}
+  #clock{order:3;margin-left:auto;padding:8px 10px}
+  #cmd{order:4;flex:1 0 100%;font-size:16px;line-height:1.3;padding:12px 10px;border-right:0;border-top:1px solid #333}
+  #tape{height:24px}
+  #grid{display:flex;flex-direction:column;flex:none;gap:6px;padding:6px}
+  #chartp{order:1;height:68vh;height:min(68dvh,560px);min-height:280px}
+  #panel-bots{order:2}
+  #panel-watch{order:3}
+  #panel-movers{order:4}
+  #panel-news{order:5}
+  .p h2{flex-wrap:wrap;padding:6px 8px;line-height:1.35}
+  .iv{padding:8px 10px}
+  table{font-size:12px}
+  td,th{padding:6px 4px}
+  .news a{overflow-wrap:anywhere}
+  .news div{padding:8px 0}
+}
+@media (max-width:420px){
+  #clock{font-size:11px}
+}
+</style>
+</head>
+<body>
+<div id="top"><span class="brand">CRYPTO&lt;GO&gt;</span><input id="cmd" placeholder="TYPE TICKER e.g. SUI <GO>  (ENTER)" enterkeyhint="go" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false"><span id="go">GO</span><span id="clock"></span></div>
+<div id="tape"><div id="tapein">LOADING…</div></div>
+<div id="grid">
+<div class="p" id="panel-bots"><h2>1) MY BOTS — CRYPTO.COM GRID <span>PRICE/RANGE ONLY</span></h2><div class="b" id="bots"></div></div>
+<div class="p" id="chartp"><h2><span id="ctitle">BTCUSDT</span><span><span class="iv" data-i="1h">1H</span><span class="iv on" data-i="4h">4H</span><span class="iv" data-i="1d">1D</span></span></h2><div id="chart"></div></div>
+<div class="p" id="panel-movers"><h2>3) TOP MOVERS 24H <span>VOL&gt;$5M USDT</span></h2><div class="b" id="movers"></div></div>
+<div class="p" id="panel-watch"><h2>2) WATCHLIST / ALERTS</h2><div class="b" id="watch"></div></div>
+<div class="p" id="panel-news"><h2>4) NEWS <span id="nsrc"></span></h2><div class="b news" id="news"></div></div>
+</div>
+<script>
+const BOTS=[["ARB",0.1571,0.2125],["INJ",7.264,9.828],["SUI",0.833,1.127]];
+const WATCH=[["IO",0.185],["EIGEN",0.285],["BTC",87500],["LPT",1.90]];
+const TAPE=["BTC","ETH","SOL","XRP","SUI","ARB","INJ"];
+let sym="BTC",iv="4h",T={},movers=[];
+const f=(x)=>{x=+x;return x>=1000?x.toLocaleString("en-US",{maximumFractionDigits:2}):x>=1?x.toFixed(3):x.toPrecision(4)};
+const pc=(x)=>(x>=0?'<span class="up">+':'<span class="dn">')+(+x).toFixed(2)+'%</span>';
+const j=u=>fetch(u).then(r=>{if(!r.ok)throw r.status;return r.json()});
+function clock(){document.getElementById("clock").textContent=new Date().toLocaleString("en-US",{timeZone:"America/New_York",hour12:false,month:"short",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"})+" ET"}
+setInterval(clock,1000);clock();
+async function prices(){
+ const all=await j("https://data-api.binance.vision/api/v3/ticker/24hr?type=MINI");
+ const full={};all.forEach(t=>{if(t.symbol.endsWith("USDT"))full[t.symbol.slice(0,-4)]=t});
+ T={};for(const k in full){const t=full[k];T[k]={p:+t.lastPrice,o:+t.openPrice,qv:+t.quoteVolume,c:t.openPrice>0?(t.lastPrice/t.openPrice-1)*100:0}}
+ const lev=/(UP|DOWN|BULL|BEAR)$/;
+ movers=Object.entries(T).filter(([k,v])=>v.qv>5e6&&!lev.test(k)&&!["USDC","FDUSD","TUSD","USDP","DAI","EUR","BUSD"].includes(k)).sort((a,b)=>b[1].c-a[1].c);
+ const row=([k,v])=>'<tr><td class="sym w" onclick="load(\''+k+'\')">'+k+'</td><td>'+f(v.p)+'</td><td>'+pc(v.c)+'</td><td class="m">'+(v.qv/1e6).toFixed(0)+'M</td></tr>';
+ document.getElementById("movers").innerHTML='<table><tr><th>GAINERS</th><th>LAST</th><th>CHG</th><th>VOL$</th></tr>'+movers.slice(0,10).map(row).join("")+'<tr><th>LOSERS</th><th></th><th></th><th></th></tr>'+movers.slice(-10).reverse().map(row).join("")+'</table>';
+ const tp=TAPE.concat(movers.slice(0,5).map(m=>m[0])).filter((v,i,a)=>a.indexOf(v)==i);
+ document.getElementById("tapein").innerHTML=tp.map(k=>T[k]?'<span><b class="w">'+k+'</b> '+f(T[k].p)+' '+pc(T[k].c)+'</span>':'').join("")+'<span class="m">TOP MOVERS ▲</span>';
+ document.getElementById("bots").innerHTML=BOTS.map(([k,lo,hi])=>{const p=T[k]?.p;if(!p)return k+" n/a";const pos=(p-lo)/(hi-lo)*100,out=pos<0||pos>100;
+  return '<div><span class="sym w" onclick="load(\''+k+'\')">'+k+'/USD</span> '+f(p)+' '+pc(T[k].c)+' '+(out?'<span class="oor">OUT OF RANGE</span>':'<span class="up">IN RANGE</span>')+'<br><span class="m">'+lo+'</span> — <b>'+pos.toFixed(1)+'%</b> — <span class="m">'+hi+'</span><div class="bar"><i style="left:calc('+Math.max(0,Math.min(100,pos))+'% - 1px)"></i></div></div>'}).join("")+'<div class="m">Live Binance USDT price used as proxy for Crypto.com USD. Bot P&amp;L not available publicly.</div>';
+ document.getElementById("watch").innerHTML='<table><tr><th>SYM</th><th>LAST</th><th>CHG</th><th>ALERT</th><th>DIST</th></tr>'+WATCH.map(([k,a])=>{const p=T[k]?.p;if(!p)return '<tr><td>'+k+'</td><td colspan=4>n/a</td></tr>';const d=(a/p-1)*100;
+  return '<tr><td class="sym w" onclick="load(\''+k+'\')">'+k+'</td><td>'+f(p)+'</td><td>'+pc(T[k].c)+'</td><td>&gt;'+f(a)+'</td><td>'+(p>=a?'<span class="oor" style="background:#0f0">HIT</span>':'<span class="w">'+d.toFixed(2)+'% away</span>')+'</td></tr>'}).join("")+'</table>';
+}
+const ch=LightweightCharts.createChart(document.getElementById("chart"),{layout:{background:{color:"#000"},textColor:"#ffa028",fontFamily:"monospace"},grid:{vertLines:{color:"#1a1a1a"},horzLines:{color:"#1a1a1a"}},timeScale:{timeVisible:true,borderColor:"#333"},rightPriceScale:{borderColor:"#333"},autoSize:true,localization:{timeFormatter:t=>new Date(t*1000).toLocaleString("en-US",{timeZone:"America/New_York",hour12:false})}});
+const cs=ch.addCandlestickSeries({upColor:"#0c0",downColor:"#e22",borderVisible:false,wickUpColor:"#0c0",wickDownColor:"#e22",priceFormat:{type:"price",precision:4,minMove:0.0001}});
+const vs=ch.addHistogramSeries({priceFormat:{type:"volume"},priceScaleId:"v"});ch.priceScale("v").applyOptions({scaleMargins:{top:0.8,bottom:0}});
+let lines=[];
+async function chart(){
+ const k=await j("https://data-api.binance.vision/api/v3/klines?symbol="+sym+"USDT&interval="+iv+"&limit=300");
+ cs.setData(k.map(r=>({time:r[0]/1000,open:+r[1],high:+r[2],low:+r[3],close:+r[4]})));
+ vs.setData(k.map(r=>({time:r[0]/1000,value:+r[5],color:+r[4]>=+r[1]?"#063":"#622"})));
+ lines.forEach(l=>cs.removePriceLine(l));lines=[];
+ const b=BOTS.find(x=>x[0]==sym);if(b){lines.push(cs.createPriceLine({price:b[1],color:"#888",title:"GRID LO"}),cs.createPriceLine({price:b[2],color:"#888",title:"GRID HI"}))}
+ const w=WATCH.find(x=>x[0]==sym);if(w)lines.push(cs.createPriceLine({price:w[1],color:"#0ff",title:"ALERT"}));
+ const t=T[sym];document.getElementById("ctitle").innerHTML=sym+"USDT "+iv.toUpperCase()+(t?' <span class="w">'+f(t.p)+'</span> '+pc(t.c).replace(/up|dn/,"w"):"");
+}
+function load(s){s=s.toUpperCase().replace(/<?GO>?|USDT|\/USD|\s/g,"");if(!s)return;const old=sym;sym=s;chart().then(()=>ch.timeScale().fitContent()).catch(()=>{document.getElementById("ctitle").textContent=s+": NOT FOUND";sym=old})}
+document.getElementById("cmd").addEventListener("keydown",e=>{if(e.key=="Enter"){load(e.target.value);e.target.value=""}});
+document.getElementById("go").onclick=()=>{const c=document.getElementById("cmd");load(c.value);c.value=""};
+document.querySelectorAll(".iv").forEach(el=>el.onclick=()=>{document.querySelectorAll(".iv").forEach(x=>x.classList.remove("on"));el.classList.add("on");iv=el.dataset.i;chart().then(()=>ch.timeScale().fitContent())});
+const FEEDS=[["COINDESK","https://www.coindesk.com/arc/outboundfeeds/rss/"],["COINTELEGRAPH","https://cointelegraph.com/rss"]];
+const esc=s=>String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+async function news(){const items=[],src=[];
+ await Promise.all(FEEDS.map(async([n,u])=>{try{const d=await j("https://api.rss2json.com/v1/api.json?rss_url="+encodeURIComponent(u));if(d.status!="ok")return;
+  d.items.forEach(i=>items.push({title:esc(i.title),link:esc(i.link),date:(i.pubDate||"").replace(" ","T")+"Z"}));src.push(n)}catch(e){}}));
+ const el=document.getElementById("news");
+ if(!items.length){document.getElementById("nsrc").textContent="";el.innerHTML='<div class="m">News unavailable</div>';return}
+ items.sort((a,b)=>new Date(b.date)-new Date(a.date));document.getElementById("nsrc").textContent=src.join("+");
+ el.innerHTML=items.slice(0,40).map(i=>'<div><span class="m">'+new Date(i.date).toLocaleTimeString("en-US",{timeZone:"America/New_York",hour12:false,hour:"2-digit",minute:"2-digit"})+'</span> <a target="_blank" rel="noopener" href="'+i.link+'">'+i.title+'</a></div>').join("")}
+prices().then(()=>chart().then(()=>ch.timeScale().fitContent()));setInterval(()=>prices().catch(()=>{}),10000);setInterval(()=>chart().catch(()=>{}),30000);
+news().catch(()=>{});setInterval(()=>news().catch(()=>{}),300000);
+if(window.matchMedia("(min-width:901px)").matches)document.getElementById("cmd").focus();
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("/crypto-terminal/sw.js",{scope:"/crypto-terminal/"}).catch(()=>{});
+}
+</script>
+</body>
+</html>
