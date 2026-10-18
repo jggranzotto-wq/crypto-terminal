@@ -2,7 +2,9 @@
 
 Installable crypto market terminal. It uses public, keyless data only — no accounts, API keys, or secrets.
 
-**Live site:** https://jggranzotto-wq.github.io/crypto-terminal/
+**Site URL:** https://jggranzotto-wq.github.io/crypto-terminal/
+
+Pages is not enabled yet. Creating the site returns `403 Resource not accessible by integration` for both the repository token and the Actions `GITHUB_TOKEN`, so an admin has to turn it on in the repository settings (steps below). After that, this URL serves the app.
 
 ## Data
 
@@ -18,9 +20,9 @@ Open the live site in Chrome, Edge, or Safari, then use **Install app** or **Add
 
 ## GitHub Pages
 
-The site is the repository root (see `.nojekyll`). `.github/workflows/pages.yml` deploys that root with GitHub Actions.
+The site is the repository root (see `.nojekyll`). `.github/workflows/pages.yml` deploys that root with GitHub Actions and asks `configure-pages` to create the site if it is missing. That create call needs admin rights the Actions token does not have.
 
 If Pages is not serving the site yet, enable one of these in the repository settings:
 
 1. **GitHub Actions** — Settings → Pages → Build and deployment → Source: GitHub Actions. The workflow runs on every push to `main`.
-2. **Branch** — Source: Deploy from a branch, branch `main`, folder `/` (root).
+2. **Branch** — Source: Deploy from a branch, branch `main`, folder `/` (root). Disable `.github/workflows/pages.yml` if you use this, or the Actions deploy will keep failing.
